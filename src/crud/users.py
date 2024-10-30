@@ -30,3 +30,7 @@ class SqlAlchemyRepository:
 
         users = await self.session.execute(query)
         return users.scalars().all()
+
+    async def get_user_invitations(self, user: User):
+        favorites = await self.session.execute(user.favorites)
+        return favorites.scalars().all()

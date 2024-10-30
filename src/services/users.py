@@ -65,3 +65,17 @@ async def get_users(
 ) -> List[User]:
     repo = SqlAlchemyRepository(session)
     return await repo.get_users_db(last_name, first_name, gendre, order_by)
+
+
+async def make_invitation(
+    user_id: int,
+    session: AsyncSession,
+    current_user: User,
+) -> None:
+    repo = SqlAlchemyRepository(session)
+    user = await repo.get_user_db(user_id)
+    if user == current_user:
+        raise exceptions.NotInviteYourSelf(current_user)
+    favorites = await repo.get_user_invitations(current_user)
+    if user in favorites:
+        raise exceptions.AlreadyInvitated(current_user)
