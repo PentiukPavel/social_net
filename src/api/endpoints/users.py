@@ -13,6 +13,7 @@ from fastapi import (
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from api.auth import auth_backend, fastapi_users, current_user
+from core.choices import APIMessages
 from core.database import get_async_session
 from models import User
 from schemes import (
@@ -25,6 +26,7 @@ from services import add_avatar, get_users, make_invitation
 from services.exceptions import (
     AlreadyInvitated,
     InvalidUserId,
+    InvitationsLimitExceeded,
     NotSelf,
     NotInviteYourSelf,
 )
@@ -81,11 +83,22 @@ async def make_invitation_endpoint(
     current_user: User = Depends(current_user),
 ):
     try:
-        await make_invitation(user_id, session, current_user)
-        return {"status": 200, "data": "Вы отпраивли приглашение."}
+        email = await make_invitation(user_id, session, current_user)
+        return {"status": HTTPStatus.CREATED, "email": email}
     except InvalidUserId:
         return HTTPException(status_code=HTTPStatus.NOT_FOUND)
     except NotInviteYourSelf:
-        return HTTPException(status_code=HTTPStatus.LOCKED, detail={})
+        return HTTPException(
+            status_code=HTTPStatus.LOCKED,
+            detail=APIMessages.NOT_INVITE_YOURSELF.value,
+        )
     except AlreadyInvitated:
-        return HTTPException(status_code=HTTPStatus.LOCKED, detail={})
+        return HTTPException(
+            status_code=HTTPStatus.LOCKED,
+            detail=APIMessages.ALREADY_INVITATED.value,
+        )
+    except InvitationsLimitExceeded:
+        return HTTPException(
+            status_code=HTTPStatus.LOCKED,
+            detail=APIMessages.INVITATION_LIMIT_EXCEEDED.value,
+        )

@@ -12,11 +12,17 @@ class NotInviteYourSelf(Exception):
 
 class InvalidUserId(Exception):
     def __init__(self, user_id: int):
-        message = f"Wrong user id - {user_id}"
+        message = f"Wrong user id - {user_id}."
         super().__init__(message)
 
 
 class AlreadyInvitated(Exception):
     def __init__(self, user_id: int):
-        message = f"User - {user_id} already has been invitated"
+        message = f"User with id {user_id} already has been invitated."
+        super().__init__(message)
+
+
+class InvitationsLimitExceeded(Exception):
+    def __init__(self, user_id: int):
+        message = f"User with id {user_id} has reached initations limit."
         super().__init__(message)

@@ -1,7 +1,9 @@
-from sqlalchemy import select, asc, desc
+from datetime import datetime
+
+from sqlalchemy import asc, desc, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from models import User
+from models import Favorite, User
 from schemes import OrderBy
 
 
@@ -34,3 +36,19 @@ class SqlAlchemyRepository:
     async def get_user_invitations(self, user: User):
         favorites = await self.session.execute(user.favorites)
         return favorites.scalars().all()
+
+    async def count_user_invitations(self, user_id) -> int:
+        query = (
+            select(Favorite)
+            .filter(
+                Favorite.subscriber_id == user_id,
+                func.DATE(Favorite.registered_at) == datetime.now().date(),
+            )
+            .count()
+        )
+        invt_quantity = await self.session.execute(query)
+        return invt_quantity
+
+    async def create_an_invitation(self, user: User, favorite: User) -> None:
+        user.favorites.append(favorite)
+        self.session.commit()

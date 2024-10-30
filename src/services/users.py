@@ -6,9 +6,11 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from PIL import Image
 
 from core.config import settings
+from core.limits import Limit
 from crud import SqlAlchemyRepository
-from services import exceptions
 from models import User
+from services import exceptions
+from utils.emails import send_invitation_by_email
 
 
 async def get_user(
@@ -71,11 +73,24 @@ async def make_invitation(
     user_id: int,
     session: AsyncSession,
     current_user: User,
-) -> None:
+) -> str:
     repo = SqlAlchemyRepository(session)
     user = await repo.get_user_db(user_id)
     if user == current_user:
         raise exceptions.NotInviteYourSelf(current_user)
+    if (
+        repo.get_user_invitations(current_user)
+        > Limit.MAX_INVITATIONS_PER_DAY.value
+    ):
+        raise exceptions.InvitationsLimitExceeded(current_user)
     favorites = await repo.get_user_invitations(current_user)
     if user in favorites:
         raise exceptions.AlreadyInvitated(current_user)
+
+    repo.create_an_invitation(current_user, user)
+    send_invitation_by_email(
+        user.email,
+        f"{current_user.first_name} {current_user.last_name}",
+        current_user.email,
+    )
+    return user.email
