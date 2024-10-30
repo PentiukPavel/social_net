@@ -1,17 +1,26 @@
 from http import HTTPStatus
-from typing import Annotated
+from typing import Annotated, List, Optional
 
-from fastapi import APIRouter, File, HTTPException, UploadFile, Path, Depends
+from fastapi import (
+    APIRouter,
+    Depends,
+    File,
+    HTTPException,
+    Path,
+    Query,
+    UploadFile,
+)
 
-from api.auth import auth_backend, fastapi_users
+from api.auth import auth_backend, fastapi_users, current_user
+from core.database import get_async_session
 from schemes import (
+    Gendre,
+    OrderBy,
     UserCreate,
     UserRead,
 )
-from services import add_avatar
+from services import add_avatar, get_users
 from services.exceptions import InvalidUserId, NotSelf
-from core.database import get_async_session
-from api.auth import current_user
 
 
 v1_users_router = APIRouter(prefix="/api/clients", tags=["Users"])
@@ -43,3 +52,16 @@ async def add_avatar_endpoint(
     except NotSelf:
         return HTTPException(status_code=HTTPStatus.FORBIDDEN)
     return user
+
+
+@v1_users_router.get("/list", response_model=List[UserRead])
+async def get_users_endpoint(
+    session=Depends(get_async_session),
+    first_name: Optional[str] = Query(alias="Имя", default=None),
+    last_name: Optional[str] = Query(alias="Фамилия", default=None),
+    gendre: Optional[Gendre] = Query(alias="Пол", default=None),
+    order_by: Optional[OrderBy] = Query(
+        alias="Сортировка по дате созлания", default=OrderBy.DESCENDING
+    ),
+):
+    return await get_users(session, first_name, last_name, gendre, order_by)

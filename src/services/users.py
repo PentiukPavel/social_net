@@ -1,5 +1,6 @@
 import shutil
 import tempfile
+from typing import List
 
 from sqlalchemy.ext.asyncio import AsyncSession
 from PIL import Image
@@ -53,3 +54,14 @@ def treat_image(avatar):
 
     im1.close()
     im2.close()
+
+
+async def get_users(
+    session: AsyncSession,
+    last_name: str,
+    first_name: str,
+    gendre: int,
+    order_by: str,
+) -> List[User]:
+    repo = SqlAlchemyRepository(session)
+    return await repo.get_users_db(last_name, first_name, gendre, order_by)
