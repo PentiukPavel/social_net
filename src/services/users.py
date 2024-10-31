@@ -1,9 +1,10 @@
 import shutil
 import tempfile
-from typing import List
+from typing import List, Optional
 
 from sqlalchemy.ext.asyncio import AsyncSession
 from PIL import Image
+from geopy.distance import great_circle as GC
 
 from core.config import settings
 from core.limits import Limit
@@ -60,13 +61,21 @@ def treat_image(avatar):
 
 async def get_users(
     session: AsyncSession,
-    last_name: str,
-    first_name: str,
-    gendre: int,
+    current_user: Optional[User],
+    last_name: Optional[str],
+    first_name: Optional[str],
+    gendre: Optional[str],
     order_by: str,
+    distance: Optional[float],
 ) -> List[User]:
     repo = SqlAlchemyRepository(session)
-    return await repo.get_users_db(last_name, first_name, gendre, order_by)
+    users = await repo.get_users_db(last_name, first_name, gendre, order_by)
+    if not distance:
+        return users
+    for i in range(len(users)):
+        if not is_in_range(current_user, users[i], distance):
+            del users[i]
+    return users
 
 
 async def make_invitation(
@@ -79,7 +88,7 @@ async def make_invitation(
     if user == current_user:
         raise exceptions.NotInviteYourSelf(current_user)
     if (
-        repo.get_user_invitations(current_user)
+        await repo.count_user_invitations(current_user)
         > Limit.MAX_INVITATIONS_PER_DAY.value
     ):
         raise exceptions.InvitationsLimitExceeded(current_user)
@@ -94,3 +103,9 @@ async def make_invitation(
         current_user.email,
     )
     return user.email
+
+
+def is_in_range(user_1: User, user_2: User, distance: float) -> bool:
+    user_1_coordinates = (user_1.lattitude, user_1.longitude)
+    user_2_coordinates = (user_2.lattitude, user_2.longitude)
+    return GC(user_1_coordinates, user_2_coordinates).km <= distance

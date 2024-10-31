@@ -7,6 +7,7 @@ from sqlalchemy import (
     Column,
     Enum,
     ForeignKey,
+    Float,
     Integer,
     String,
     TIMESTAMP,
@@ -31,13 +32,25 @@ class User(SQLAlchemyBaseUserTable[int], Base):
     is_active: Mapped[bool] = Column(Boolean, default=True, nullable=False)
     is_superuser: Mapped[bool] = Column(Boolean, default=False, nullable=False)
     is_verified: Mapped[bool] = Column(Boolean, default=False, nullable=False)
+    lattitude: Mapped[float] = Column(
+        Float,
+        CheckConstraint("lattitude >= -90.0 AND lattitude <= 90.0"),
+        default=0.0,
+        nullable=False,
+    )
+    longitude: Mapped[float] = Column(
+        Float,
+        CheckConstraint("longitude >= -180.0 AND longitude <= 180.0"),
+        default=0.0,
+        nullable=False,
+    )
 
-    favorites: Mapped[List["User"]] = relationship(
+    subscribers: Mapped[List["User"]] = relationship(
         secondary="favorites",
         backref=backref("favorites", lazy="dynamic"),
         lazy="dynamic",
-        primaryjoin="Subscriptions.favorite_id == User.id",
-        secondaryjoin="Subscriptions.subscriber_id == User.id",
+        primaryjoin="Favorite.favorite_id == User.id",
+        secondaryjoin="Favorite.subscriber_id == User.id",
     )
 
 

@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import List, Optional
 
 from sqlalchemy import asc, desc, func, select
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -16,7 +17,13 @@ class SqlAlchemyRepository:
         user = await self.session.execute(query)
         return user.scalar_one_or_none()
 
-    async def get_users_db(self, last_name, first_name, gendre, order_by: str):
+    async def get_users_db(
+        self,
+        last_name: Optional[str],
+        first_name: Optional[str],
+        gendre: Optional[str],
+        order_by: str,
+    ) -> Optional[List[User]]:
         query = select(User)
         if last_name:
             query = query.filter(User.last_name.contains(last_name))
@@ -37,17 +44,13 @@ class SqlAlchemyRepository:
         favorites = await self.session.execute(user.favorites)
         return favorites.scalars().all()
 
-    async def count_user_invitations(self, user_id) -> int:
-        query = (
-            select(Favorite)
-            .filter(
-                Favorite.subscriber_id == user_id,
-                func.DATE(Favorite.registered_at) == datetime.now().date(),
-            )
-            .count()
+    async def count_user_invitations(self, user: User) -> int:
+        query = select(Favorite).filter(
+            Favorite.subscriber_id == user.id,
+            func.DATE(Favorite.registered_at) == datetime.now().date(),
         )
-        invt_quantity = await self.session.execute(query)
-        return invt_quantity
+        invtitations = await self.session.execute(query)
+        return len(invtitations.scalars().all())
 
     async def create_an_invitation(self, user: User, favorite: User) -> None:
         user.favorites.append(favorite)

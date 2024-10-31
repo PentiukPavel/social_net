@@ -19,6 +19,8 @@ class UserRead(schemas.BaseUser[int]):
     sex: Gendre
     url_avatar: str
     registered_at: datetime
+    lattitude: float
+    longitude: float
 
 
 class UserCreate(schemas.BaseUserCreate):

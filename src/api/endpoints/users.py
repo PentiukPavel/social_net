@@ -12,7 +12,12 @@ from fastapi import (
 )
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from api.auth import auth_backend, fastapi_users, current_user
+from api.auth import (
+    auth_backend,
+    fastapi_users,
+    optional_current_user,
+    current_user,
+)
 from core.choices import APIMessages
 from core.database import get_async_session
 from models import User
@@ -66,14 +71,24 @@ async def add_avatar_endpoint(
 @v1_users_router.get("/list", response_model=List[UserRead])
 async def get_users_endpoint(
     session: AsyncSession = Depends(get_async_session),
+    current_user: User = Depends(optional_current_user),
     first_name: Optional[str] = Query(alias="Имя", default=None),
     last_name: Optional[str] = Query(alias="Фамилия", default=None),
     gendre: Optional[Gendre] = Query(alias="Пол", default=None),
     order_by: Optional[OrderBy] = Query(
         alias="Сортировка по дате создания", default=OrderBy.DESCENDING
     ),
+    distance: Optional[float] = Query(alias="Радиус", default=None),
 ):
-    return await get_users(session, first_name, last_name, gendre, order_by)
+    return await get_users(
+        session,
+        current_user,
+        first_name,
+        last_name,
+        gendre,
+        order_by,
+        distance,
+    )
 
 
 @v1_users_router.post("clients/{user_id}/match")
