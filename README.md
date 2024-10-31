@@ -47,7 +47,15 @@ pip install -r requirements.txt
 ```bash
 pip install -r requirements_dev.txt
 ```
-5. Запустить проект:
+5. перейти в корневую папку проекта:
+```bash
+cd src
+```
+6. Выполнить миграции c помощью команды:
+```bash
+alembic upgrade head
+```
+7. Запустить проект:
 ```bash
 uvicorn main:app --reload
 ```
@@ -55,14 +63,20 @@ uvicorn main:app --reload
 ### 2) Запуск на локальной машине через Docker
 
 1. Установка [Docker](https://www.docker.com/get-started/)
-2. Для запуска проекта в корневой папке выполнить команду
+2. Для запуска проекта в корневой папке выполнить команду:
     ```bash
-    docker compose up -d
+    docker-compose up -d
     ```
-3. Для остановки проекта в корневой папке выполнить команду
+3. Выполнить миграции c помощью команды:
     ```bash
-    docker compose down -v
+    docker-compose exec backend alembic upgrade head
     ```
+4. Для остановки проекта в корневой папке выполнить команду:
+    ```bash
+    docker-compose down -v
+    ```
+
+Документация к API (swagger) будет доступна по ссылке: http://127.0.0.1/docs/
 ## Системные требования
 ### Python==3.12
 
