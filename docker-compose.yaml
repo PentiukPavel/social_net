@@ -1,0 +1,46 @@
+
+version: '3.8'
+
+services:
+  db:
+    image: postgres:16.1-alpine
+    container_name: db
+    restart: always
+    volumes:
+      - social_net_data:/var/lib/postgresql/data/
+    env_file:
+      - ./.env
+
+  nginx:
+    image: nginx:1.21.3-alpine
+    container_name: nginx
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf
+      - social_net_value:/var/html/media/
+    depends_on:
+      - backend
+
+  redis:
+    image: redis:alpine
+    container_name: redis
+
+  backend:
+    build: .
+    container_name: backend
+    restart: always
+    volumes:
+      - social_net_value:/app/media/
+    depends_on:
+      - db
+      - redis
+    ports:
+      - "8000:8000"
+    env_file:
+      - ./.env
+
+volumes:
+  social_net_media_value:
+  social_net_data:
