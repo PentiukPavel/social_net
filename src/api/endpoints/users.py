@@ -52,9 +52,14 @@ v1_users_router.include_router(
 )
 
 
-@v1_users_router.post("/{user_id}/add_image", response_model=UserRead)
+@v1_users_router.post(
+    "/{user_id}/add_image",
+    response_model=UserRead,
+    summary="Добавить аватар.",
+    description="Добавить фото пользователя.",
+)
 async def add_avatar_endpoint(
-    user_id=Annotated[int, Path(ge=0)],
+    user_id: Annotated[int, Path(ge=0)],
     avatar: UploadFile = File(...),
     session: AsyncSession = Depends(get_async_session),
     current_user: User = Depends(current_user),
@@ -68,7 +73,12 @@ async def add_avatar_endpoint(
     return user
 
 
-@v1_users_router.get("/list", response_model=List[UserRead])
+@v1_users_router.get(
+    "/list",
+    response_model=List[UserRead],
+    summary="Список пользователей.",
+    description="Список всех пользователей сервиса.",
+)
 async def get_users_endpoint(
     session: AsyncSession = Depends(get_async_session),
     current_user: User = Depends(optional_current_user),
@@ -91,9 +101,16 @@ async def get_users_endpoint(
     )
 
 
-@v1_users_router.post("clients/{user_id}/match")
+@v1_users_router.post(
+    "clients/{user_id}/match",
+    summary="Отправить приглашение.",
+    description="""
+        Отправить приглашение другому пользователю.
+        Лимит - 100 приглашений в день.
+    """,
+)
 async def make_invitation_endpoint(
-    user_id: int,
+    user_id: Annotated[int, Path(ge=0)],
     session: AsyncSession = Depends(get_async_session),
     current_user: User = Depends(current_user),
 ):
