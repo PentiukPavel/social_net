@@ -63,5 +63,7 @@ uvicorn main:app --reload
 ### FastAPI
 ### FastAPI Users
 ### geopy
+### pytest
 ### SQLAlchemy
 ### PosrgreSQL
+### Redis

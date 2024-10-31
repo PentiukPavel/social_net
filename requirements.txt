@@ -66,3 +66,5 @@ watchfiles==0.24.0
 websockets==13.1
 geopy==2.4.1
 fastapi-cache2[redis]
+async_factory_boy==1.0.1
+pytest-asyncio==0.24.0
