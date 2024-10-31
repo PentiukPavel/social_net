@@ -72,9 +72,10 @@ async def get_users(
     users = await repo.get_users_db(last_name, first_name, gendre, order_by)
     if not distance:
         return users
-    for i in range(len(users)):
-        if not is_in_range(current_user, users[i], distance):
-            del users[i]
+    if current_user:
+        for i in range(len(users)):
+            if not is_in_range(current_user, users[i], distance):
+                del users[i]
     return users
 
 
