@@ -15,6 +15,7 @@ app = FastAPI(
 app.include_router(v1_main_router)
 
 
+@app.on_event("startup")
 async def startup():
     redis = aioredis.from_url(
         f"redis://{settings.REDIS_HOST}:{settings.REDIS_PORT}"

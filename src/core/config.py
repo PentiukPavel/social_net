@@ -7,11 +7,11 @@ class Settings(BaseSettings):
     STORAGE_LOCATION: str = "media/"
 
     # Data Base config
-    DB_HOST: str
-    DB_PORT: str
-    DB_NAME: str
-    DB_USER: str
-    DB_PASS: str
+    POSTGRES_HOST: str
+    POSTGRES_PORT: str
+    POSTGRES_NAME: str
+    POSTGRES_USER: str
+    POSTGRES_PASSWORD: str
 
     # e-mail config
     SMTP_PASSWORD: str
@@ -36,8 +36,10 @@ class Settings(BaseSettings):
 settings = Settings()
 
 DSN = (
-    f"postgresql+asyncpg://{settings.DB_USER}:{settings.DB_PASS}"
-    f"@{settings.DB_HOST}:{settings.DB_PORT}/{settings.DB_NAME}"
+    f"postgresql+asyncpg://{settings.POSTGRES_USER}:"
+    f"{settings.POSTGRES_PASSWORD}"
+    f"@{settings.POSTGRES_HOST}:{settings.POSTGRES_PORT}"
+    f"/{settings.POSTGRES_NAME}"
 )
 DATABASE_URL_TEST = (
     f"postgresql+asyncpg://{settings.DB_USER_TEST}:{settings.DB_PASS_TEST}"

@@ -9,4 +9,4 @@ RUN pip3 install -U pip && \
 
 COPY ./src /app
 
-CMD guincorn main:app --workers 4 -- worker-class uvicorn.workers.UvicornWorker --bind=0.0.0.0:8000
+CMD uvicorn main:app --host 0.0.0.0
