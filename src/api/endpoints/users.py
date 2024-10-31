@@ -10,6 +10,7 @@ from fastapi import (
     Query,
     UploadFile,
 )
+from fastapi_cache.decorator import cache
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from api.auth import (
@@ -79,6 +80,7 @@ async def add_avatar_endpoint(
     summary="Список пользователей.",
     description="Список всех пользователей сервиса.",
 )
+@cache(expire=90)
 async def get_users_endpoint(
     session: AsyncSession = Depends(get_async_session),
     current_user: User = Depends(optional_current_user),
